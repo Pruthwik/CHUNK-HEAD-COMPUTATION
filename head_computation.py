@@ -21,7 +21,7 @@ def readFilesAndComputeHeadOfChunks(inputPath, chunkTagPOSMapping, outputPath):
         writeListToFile(headComputedSentences, outputPath)
     else:
         fileList = ssfAPI.folderWalk(inputPath)
-        newFileList = list()
+        newFileList = []
         for fileName in fileList:
             xFileName = fileName.split('/')[-1]
             if xFileName == 'err.txt' or xFileName.split('.')[-1] in ['comments', 'bak'] or xFileName[:4] == 'task':
@@ -35,7 +35,7 @@ def readFilesAndComputeHeadOfChunks(inputPath, chunkTagPOSMapping, outputPath):
 
 
 def computeHeadOfChunks(document, chunkTagPOSMapping):
-    headComputedSentences = list()
+    headComputedSentences = []
     for tree in document.nodeList:
         headFound = True
         for indexChunk, chunkNode in enumerate(tree.nodeList):
@@ -45,27 +45,27 @@ def computeHeadOfChunks(document, chunkTagPOSMapping):
                         chunkNode.addAttribute('af', node.getAttribute('af'))
                     else:
                         chunkNode.addAttribute('af', 'null,unk,,,,,,')
-                    chunkNode.addAttribute('head', node.lex)
+                    chunkNode.addAttribute('head', node.name)
             else:
                 probablePOSTagsList = [chunkTagPOSMapping[
                     key] for key in chunkTagPOSMapping if re.search(key, chunkNode.type)]
                 if len(probablePOSTagsList) > 0:
                     probablePOSTags = probablePOSTagsList[0]
-                    matchedPOSTags = list()
+                    matchedPOSTags = []
                     for node in chunkNode.nodeList:
                         if re.search(probablePOSTags, node.type) and not re.search('^NULL', node.lex):
                             matchedPOSTags.append(
-                                (node.lex, node.type, node.getAttribute('af')))
+                                (node.name, node.type, node.getAttribute('af')))
                     if len(matchedPOSTags) > 0:
                         chunkNode.addAttribute('af', matchedPOSTags[-1][2])
                         chunkNode.addAttribute('head', matchedPOSTags[-1][0])
                     else:
                         if chunkNode.type == 'NP':
-                            matchedPOSTags = list()
+                            matchedPOSTags = []
                             for node in chunkNode.nodeList:
                                 if re.search('QT_QT.+|N_NST|QT__QT.+|N__NST', node.type):
                                     matchedPOSTags.append(
-                                        (node.lex, node.type, node.getAttribute('af')))
+                                        (node.name, node.type, node.getAttribute('af')))
                             if len(matchedPOSTags) > 0:
                                 chunkNode.addAttribute('af', matchedPOSTags[-1][2])
                                 chunkNode.addAttribute('head', matchedPOSTags[-1][0])
